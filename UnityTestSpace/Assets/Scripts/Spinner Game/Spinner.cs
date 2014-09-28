@@ -48,19 +48,7 @@ public class Spinner : MonoBehaviour
         // TESTING
         if (Input.GetKeyDown(KeyCode.Space))
         {
-            ForcedetachFromTrack();
-        }
-
-        if (!on_track)
-        {
-            if (Input.GetKeyDown(KeyCode.LeftArrow))
-            {
-                direction = -1;
-            }
-            else if (Input.GetKeyDown(KeyCode.RightArrow))
-            {
-                direction = 1;
-            }
+            ForceDetachFromTrack();
         }
 
     }
@@ -90,10 +78,19 @@ public class Spinner : MonoBehaviour
     {
         foreach (ContactPoint2D contact in collision.contacts)
         {
-            // attach to a track if not on a track already
-            if (!on_track && contact.collider.tag == "track")
+            if (contact.collider.tag == "track")
             {
-                AttachToTrack(contact);
+                // attach to a track if not on a track already
+                if (!on_track) AttachToTrack(contact);
+            }
+            else if (contact.collider.tag == "wall")
+            {
+                if (on_track)
+                {
+                    track_direction *= -1;
+                    direction *= -1;
+                }
+                //ForceDetachFromTrack();
             }
         }
     }
@@ -143,7 +140,7 @@ public class Spinner : MonoBehaviour
         AttachToTrack(contact.collider);
     }
     
-    private void ForcedetachFromTrack()
+    private void ForceDetachFromTrack()
     {
         if (!on_track) return;
         DetachFromTrack();
