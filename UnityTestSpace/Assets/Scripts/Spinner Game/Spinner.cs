@@ -3,17 +3,24 @@ using System.Collections;
 
 public class Spinner : MonoBehaviour 
 {
+    // references
+    private SpriteRenderer sprite_renderer;
+    public LayerMask tracks_layer;
+
+    // appearance
+    public Material mat_on_track, mat_normal;
+
+    // movement / physics
+    public float radius = 1f;
+    public float force_detach_knockback = 10f;
+    public float track_speed = 20f;
+    
+    // track
     private bool on_track = false;
-    Collider2D track = null;
+    private Collider2D track = null;
     private Vector2 track_direction;
 
-    public Material mat_on_track, mat_normal;
-    private SpriteRenderer sprite_renderer;
-
-    public LayerMask tracks_layer;
-    public float radius = 1f;
-
-    private float track_speed = 20f;
+    
 
 
 
@@ -34,6 +41,13 @@ public class Spinner : MonoBehaviour
             UpdateTrackAttatchment();
             transform.Translate(track_direction * track_speed * Time.deltaTime);
         }
+
+        // TESTING
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            ForcedetachFromTrack();
+        }
+
     }
     public void FixedUpdate()
     {
@@ -44,10 +58,10 @@ public class Spinner : MonoBehaviour
     /*
     public void OnTriggerExit2D(Collider2D collider)
     {
-        if (collider.tag == "track" && collider == track) // only detatch if not on a different track now
+        if (collider.tag == "track" && collider == track) // only detach if not on a different track now
         {
             Debug.Log("leave track");
-            DetatchFromTrack();
+            detachFromTrack();
         }
 
         Debug.Log("leave old track (do nothing)");
@@ -74,7 +88,7 @@ public class Spinner : MonoBehaviour
         // detach
         if (hit.collider == null)
         {
-            DetatchFromTrack();
+            DetachFromTrack();
             return;
         }
         
@@ -107,8 +121,15 @@ public class Spinner : MonoBehaviour
         track_direction = Perpendicular(normal);
     }
     
-    private void DetatchFromTrack()
+    private void ForcedetachFromTrack()
     {
+        DetachFromTrack();
+        rigidbody2D.AddForce(Perpendicular(track_direction) * force_detach_knockback, ForceMode2D.Impulse);
+    }
+    private void DetachFromTrack()
+    {
+        if (!on_track) return;
+
         on_track = false;
         track = null;
         sprite_renderer.material = mat_normal;
