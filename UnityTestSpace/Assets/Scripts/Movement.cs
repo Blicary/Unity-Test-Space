@@ -5,6 +5,7 @@ public class Movement : MonoBehaviour
 {
     public ParticleSystem particles;
 
+    public float turn_speed = 5f;
     private float max_speed = 30.0f;
     private float drag = 0.01f;
 
@@ -46,7 +47,7 @@ public class Movement : MonoBehaviour
             }
         }
 
-        transform.rotation = Quaternion.Lerp(transform.rotation, target_rotation, Time.deltaTime * 10.0f);
+        transform.rotation = Quaternion.Lerp(transform.rotation, target_rotation, Time.deltaTime * turn_speed);
         direction_point.x = Mathf.Cos((transform.rotation.eulerAngles.z + 90) * Mathf.Deg2Rad);
         direction_point.y = Mathf.Sin((transform.rotation.eulerAngles.z + 90) * Mathf.Deg2Rad);
 
