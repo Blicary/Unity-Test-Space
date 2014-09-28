@@ -14,13 +14,15 @@ public class Spinner : MonoBehaviour
     public float radius = 1f;
     public float force_detach_knockback = 10f;
     public float track_speed = 20f;
+    public float drag = 0.4f;
+    private Vector2 last_velocity;
     
     // track
     private bool on_track = false;
     private Collider2D track = null;
     private Vector2 track_direction;
 
-    
+    private int direction = 1;
 
 
 
@@ -31,7 +33,8 @@ public class Spinner : MonoBehaviour
 
 
         sprite_renderer.material = mat_normal;
-        rigidbody2D.velocity = Vector2.up * 15f;
+        rigidbody2D.velocity = new Vector2(0, 8);
+        last_velocity = rigidbody2D.velocity;
     }
 
     public void Update()
@@ -48,11 +51,26 @@ public class Spinner : MonoBehaviour
             ForcedetachFromTrack();
         }
 
+        if (!on_track)
+        {
+            if (Input.GetKeyDown(KeyCode.LeftArrow))
+            {
+                direction = -1;
+            }
+            else if (Input.GetKeyDown(KeyCode.RightArrow))
+            {
+                direction = 1;
+            }
+        }
+
     }
     public void FixedUpdate()
     {
         if (!on_track)
-            rigidbody2D.velocity *= 1f - (0.7f * Time.fixedDeltaTime);
+        {
+            last_velocity = rigidbody2D.velocity;
+            rigidbody2D.velocity *= 1f - (drag * Time.fixedDeltaTime);
+        }
     }
 
     /*
@@ -83,7 +101,7 @@ public class Spinner : MonoBehaviour
     
     private void UpdateTrackAttatchment()
     {
-        RaycastHit2D hit = Physics2D.Raycast(transform.position, -Perpendicular(track_direction), radius + 0.5f, tracks_layer);
+        RaycastHit2D hit = Physics2D.Raycast(transform.position, -Perpendicular(track_direction, direction), radius + 0.5f, tracks_layer);
 
         // detach
         if (hit.collider == null)
@@ -100,9 +118,7 @@ public class Spinner : MonoBehaviour
         transform.position = hit.point + hit.normal * radius;
 
         // update direction
-        track_direction = -Perpendicular(hit.normal);
-        //Debug.DrawLine(transform.position, hit.point, Color.blue);
-        //Debug.DrawLine(transform.position, (Vector2)transform.position + track_direction * radius, Color.white);
+        track_direction = -Perpendicular(hit.normal, direction);
     }
     private void AttachToTrack(Collider2D collider)
     {
@@ -114,17 +130,24 @@ public class Spinner : MonoBehaviour
     }
     private void AttachToTrack(ContactPoint2D contact)
     {
-        AttachToTrack(contact.collider);
-
         // find track_direction first time
         Vector2 normal = (contact.point - (Vector2)transform.position).normalized;
-        track_direction = Perpendicular(normal);
+        Vector2 perp = Perpendicular(normal, 1);
+        float dot = Vector2.Dot(last_velocity, perp);
+        direction = dot == 0 ? direction : dot > 0 ? 1 : -1;
+
+        track_direction = Perpendicular(normal, direction);
+
+
+        // attach
+        AttachToTrack(contact.collider);
     }
     
     private void ForcedetachFromTrack()
     {
+        if (!on_track) return;
         DetachFromTrack();
-        rigidbody2D.AddForce(Perpendicular(track_direction) * force_detach_knockback, ForceMode2D.Impulse);
+        rigidbody2D.AddForce(Perpendicular(track_direction, direction) * force_detach_knockback, ForceMode2D.Impulse);
     }
     private void DetachFromTrack()
     {
@@ -138,9 +161,9 @@ public class Spinner : MonoBehaviour
     }
 
 
-    private Vector2 Perpendicular(Vector2 v)
+    private Vector2 Perpendicular(Vector2 v, int direction)
     {
-        return new Vector2(v.y, -v.x);
+        return new Vector2(v.y, -v.x) * direction;
     }
 
 }
