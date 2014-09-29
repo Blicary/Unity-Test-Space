@@ -25,16 +25,17 @@ public class Spinner : MonoBehaviour
     private int direction = 1;
 
 
+    // PUBLIC MODIFIERS
 
     public void Start()
     {
         sprite_renderer = GetComponent<SpriteRenderer>();
         if (sprite_renderer == null) Debug.LogError("SpriteRenderer missing");
 
-
         sprite_renderer.material = mat_normal;
-        rigidbody2D.velocity = new Vector2(0, 8);
         last_velocity = rigidbody2D.velocity;
+
+        rigidbody2D.velocity = new Vector2(0, 8);
     }
 
     public void Update()
@@ -52,27 +53,6 @@ public class Spinner : MonoBehaviour
         }
 
     }
-    public void FixedUpdate()
-    {
-        if (!on_track)
-        {
-            last_velocity = rigidbody2D.velocity;
-            rigidbody2D.velocity *= 1f - (drag * Time.fixedDeltaTime);
-        }
-    }
-
-    /*
-    public void OnTriggerExit2D(Collider2D collider)
-    {
-        if (collider.tag == "track" && collider == track) // only detach if not on a different track now
-        {
-            Debug.Log("leave track");
-            detachFromTrack();
-        }
-
-        Debug.Log("leave old track (do nothing)");
-    }
-     * */
     
     public void OnCollisionEnter2D(Collision2D collision)
     {
@@ -94,7 +74,9 @@ public class Spinner : MonoBehaviour
             }
         }
     }
-    
+
+
+    // PRIVATE MODIFIERS
     
     private void UpdateTrackAttatchment()
     {
@@ -124,6 +106,9 @@ public class Spinner : MonoBehaviour
         sprite_renderer.material = mat_on_track;
 
         rigidbody2D.velocity = Vector2.zero;
+        transform.rotation = Quaternion.identity;
+
+        SendMessage("OnSpinnerAttach");
     }
     private void AttachToTrack(ContactPoint2D contact)
     {
@@ -134,7 +119,7 @@ public class Spinner : MonoBehaviour
         direction = dot == 0 ? direction : dot > 0 ? 1 : -1;
 
         track_direction = Perpendicular(normal, direction);
-
+        Debug.DrawRay(contact.point, normal*3f, Color.white, 5f);
 
         // attach
         AttachToTrack(contact.collider);
@@ -143,8 +128,8 @@ public class Spinner : MonoBehaviour
     private void ForceDetachFromTrack()
     {
         if (!on_track) return;
-        DetachFromTrack();
         rigidbody2D.AddForce(Perpendicular(track_direction, direction) * force_detach_knockback, ForceMode2D.Impulse);
+        DetachFromTrack();
     }
     private void DetachFromTrack()
     {
@@ -155,12 +140,24 @@ public class Spinner : MonoBehaviour
         sprite_renderer.material = mat_normal;
 
         rigidbody2D.velocity = track_direction * track_speed;
+
+        SendMessage("OnSpinnerDetach");
     }
 
+
+    // PRIVATE HELPERS
 
     private Vector2 Perpendicular(Vector2 v, int direction)
     {
         return new Vector2(v.y, -v.x) * direction;
+    }
+
+
+    // PUBLIC ACCESSORS
+
+    public bool OnTrack()
+    {
+        return on_track;
     }
 
 }
