@@ -4,7 +4,7 @@ using System.Collections;
 public class Spinner : MonoBehaviour 
 {
     // references
-    private SpriteRenderer sprite_renderer;
+    public SpriteRenderer graphics_renderer;
     public LayerMask tracks_layer;
     public CircleCollider2D tracks_collider;
 
@@ -29,10 +29,7 @@ public class Spinner : MonoBehaviour
 
     public void Start()
     {
-        sprite_renderer = GetComponent<SpriteRenderer>();
-        if (sprite_renderer == null) Debug.LogError("SpriteRenderer missing");
-
-        sprite_renderer.material = mat_normal;
+        graphics_renderer.material = mat_normal;
         last_velocity = rigidbody2D.velocity;
 
         rigidbody2D.velocity = new Vector2(0, 8);
@@ -110,7 +107,7 @@ public class Spinner : MonoBehaviour
     {
         on_track = true;
         track = collider;
-        sprite_renderer.material = mat_on_track;
+        graphics_renderer.material = mat_on_track;
 
         rigidbody2D.velocity = Vector2.zero;
         transform.rotation = Quaternion.identity;
@@ -145,7 +142,7 @@ public class Spinner : MonoBehaviour
 
         on_track = false;
         track = null;
-        sprite_renderer.material = mat_normal;
+        graphics_renderer.material = mat_normal;
 
         if (forceful)
         {

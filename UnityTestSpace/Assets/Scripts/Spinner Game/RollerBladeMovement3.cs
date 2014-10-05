@@ -4,7 +4,7 @@ using System.Collections;
 public class RollerBladeMovement3 : MonoBehaviour 
 {
     private Spinner spinner;
-    public Transform dir_arrow;
+    public Transform graphics, graphics_arrow;
 
     private float speed = 20f;
 
@@ -16,6 +16,12 @@ public class RollerBladeMovement3 : MonoBehaviour
     private bool break_turned = false;
     private float break_turn_speed_threshold = 8f;
 
+    private float input_steer = 0;
+    private bool input_fwrd = false;
+    private bool input_back = false;
+    private bool input_back_up = false;
+
+    Vector2 direction = new Vector2();
 
 
     public void Start()
@@ -28,19 +34,33 @@ public class RollerBladeMovement3 : MonoBehaviour
         if (spinner != null && spinner.OnTrack()) return;
 
         // input
-        float input_steer = Input.GetAxis("Horizontal");
-        bool input_fwrd = Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.UpArrow);
-        bool input_back = Input.GetButton("Back");
-        bool input_back_up = Input.GetButtonUp("Back");
-        bool input_back_press = Input.GetButtonDown("Back");
+        input_steer = Input.GetAxis("Horizontal");
+        input_fwrd = Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.UpArrow);
+        input_back = Input.GetButton("Back");
+        input_back_up = Input.GetButtonUp("Back");
 
         // rotation
         rotation -= input_steer * rotate_speed * Time.deltaTime;
-        transform.rotation = Quaternion.Euler(0, 0, (rotation * Mathf.Rad2Deg) - 90);
-        Vector2 direction = new Vector2(Mathf.Cos(rotation), Mathf.Sin(rotation));
+        graphics.localEulerAngles = new Vector3(0, 0, (rotation * Mathf.Rad2Deg) - 90);
+        direction = new Vector2(Mathf.Cos(rotation), Mathf.Sin(rotation));
+
+        // break turn reset
+        if (input_back_up)
+        {
+            break_turned = false;
+        }
+    }
+    public void FixedUpdate()
+    {
+
+        if (spinner != null && spinner.OnTrack()) return;
 
 
+        // rotation
 
+        Debug.Log(break_turned);
+
+        // forward and break movement
         if (input_back)
         {
             rigidbody2D.velocity /= 1 + break_drag * Time.deltaTime;
@@ -48,17 +68,13 @@ public class RollerBladeMovement3 : MonoBehaviour
             if (input_fwrd && !break_turned && rigidbody2D.velocity.magnitude <= break_turn_speed_threshold)
             {
                 rotation += Mathf.PI;
-                transform.rotation = Quaternion.Euler(0, 0, (rotation * Mathf.Rad2Deg) - 90);
+                graphics.rotation = Quaternion.Euler(0, 0, (rotation * Mathf.Rad2Deg) - 90);
 
                 break_turned = true;
             }
         }
         else
         {
-            if (input_back_up)
-                break_turned = false;
-
-
             if (!input_fwrd || rigidbody2D.velocity.magnitude > speed)
             {
                 // drag
@@ -70,13 +86,8 @@ public class RollerBladeMovement3 : MonoBehaviour
                 rigidbody2D.velocity = direction * Mathf.Max(speed, rigidbody2D.velocity.magnitude);
             }
         }
-
-
-        
-
-
-        //Debug.Log(rigidbody2D.velocity.magnitude);
     }
+
 
     public void OnSpinnerDetach()
     {
@@ -85,12 +96,12 @@ public class RollerBladeMovement3 : MonoBehaviour
     public void OnSpinnerAttach()
     {
         transform.rotation = Quaternion.identity;
-        dir_arrow.gameObject.SetActive(false);
+        graphics_arrow.gameObject.SetActive(false);
     }
 
     private void Reset()
     {
         rotation = Mathf.Atan2(rigidbody2D.velocity.y, rigidbody2D.velocity.x);
-        dir_arrow.gameObject.SetActive(true);
+        graphics_arrow.gameObject.SetActive(true);
     }
 }
