@@ -49,6 +49,8 @@ public class Spinner : MonoBehaviour
             DetachFromTrack(true);
         }
 
+
+        last_velocity = rigidbody2D.velocity;
     }
     
     public void OnTriggerExit2D(Collider2D collider)
@@ -84,7 +86,7 @@ public class Spinner : MonoBehaviour
     
     private void UpdateTrackAttatchment()
     {
-        RaycastHit2D hit = Physics2D.Raycast(transform.position, -Perpendicular(attached_direction, track_direction), radius + 0.5f, tracks_layer);
+        RaycastHit2D hit = Physics2D.Raycast(transform.position, -AttachedTrackNormal(), radius + 0.5f, tracks_layer);
 
         // detach
         if (hit.collider == null)
@@ -101,7 +103,7 @@ public class Spinner : MonoBehaviour
         UpdateAttachedPosition(hit.point, hit.normal);
 
         // update direction
-        attached_direction = -Perpendicular(hit.normal, track_direction);
+        attached_direction = AttachedDirection(hit.normal);
     }
     private void AttachToTrack(Collider2D collider)
     {
@@ -116,21 +118,24 @@ public class Spinner : MonoBehaviour
     }
     private void AttachToTrack(ContactPoint2D contact)
     {
+        Debug.Log("attach first");
+
+
+
         // find direction first time
-        Vector2 normal = (contact.point - (Vector2)transform.position).normalized;
-        Vector2 perp = Perpendicular(normal, 1);
+        Vector2 perp = Perpendicular(contact.normal);
 
         float dot = Vector2.Dot(last_velocity, perp);
         track_direction = dot == 0 ? track_direction : dot > 0 ? 1 : -1;
 
-        attached_direction = Perpendicular(normal, track_direction);
+        attached_direction = AttachedDirection(contact.normal);
 
 
         // disable track collider
         tracks_collider.enabled = false;
 
         // update spinner position (first time) 
-        UpdateAttachedPosition(contact.point, normal);
+        UpdateAttachedPosition(contact.point, contact.normal);
 
         // attach
         AttachToTrack(contact.collider);
@@ -147,7 +152,7 @@ public class Spinner : MonoBehaviour
         if (forceful)
         {
             // push the spinner away from the track
-            Vector2 normal = Perpendicular(attached_direction, track_direction);
+            Vector2 normal = AttachedTrackNormal();
             Vector2 v = (attached_direction + normal).normalized;
             rigidbody2D.velocity = v * track_speed;
 
@@ -165,15 +170,24 @@ public class Spinner : MonoBehaviour
 
     private void UpdateAttachedPosition(Vector2 point_on_track, Vector2 track_normal)
     {
+        Debug.Log(track_normal);
         transform.position = point_on_track + track_normal * radius;
     }
 
 
     // PRIVATE HELPERS
 
-    private Vector2 Perpendicular(Vector2 v, int track_direction)
+    private Vector2 AttachedTrackNormal()
     {
-        return new Vector2(v.y, -v.x) * track_direction;
+        return new Vector2(attached_direction.y, -attached_direction.x) * track_direction * -1;
+    }
+    private Vector2 AttachedDirection(Vector2 track_normal)
+    {
+        return new Vector2(track_normal.y, -track_normal.x) * track_direction;
+    }
+    private Vector2 Perpendicular(Vector2 v)
+    {
+        return new Vector2(v.y, -v.x);
     }
 
 

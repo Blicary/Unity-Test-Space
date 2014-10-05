@@ -52,13 +52,8 @@ public class RollerBladeMovement3 : MonoBehaviour
     }
     public void FixedUpdate()
     {
-
         if (spinner != null && spinner.OnTrack()) return;
 
-
-        // rotation
-
-        Debug.Log(break_turned);
 
         // forward and break movement
         if (input_back)
