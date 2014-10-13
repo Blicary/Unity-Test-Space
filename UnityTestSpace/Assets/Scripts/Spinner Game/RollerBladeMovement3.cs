@@ -9,7 +9,7 @@ public class RollerBladeMovement3 : MonoBehaviour
     private float speed = 20f;
 
     private float rotation = 0;
-    private float rotate_speed = 5f;
+    public float rotate_speed = 5f;
 
     private float drag = 0.5f;
     private float break_drag = 6.5f;
@@ -21,7 +21,7 @@ public class RollerBladeMovement3 : MonoBehaviour
     private bool input_back = false;
     private bool input_back_up = false;
 
-    Vector2 direction = new Vector2();
+    public Vector2 direction = new Vector2();
 
 
     public void Start()
@@ -91,12 +91,12 @@ public class RollerBladeMovement3 : MonoBehaviour
     public void OnSpinnerAttach()
     {
         transform.rotation = Quaternion.identity;
-        graphics_arrow.gameObject.SetActive(false);
+        //graphics_arrow.gameObject.SetActive(false);
     }
 
     private void Reset()
     {
         rotation = Mathf.Atan2(rigidbody2D.velocity.y, rigidbody2D.velocity.x);
-        graphics_arrow.gameObject.SetActive(true);
+        //graphics_arrow.gameObject.SetActive(true);
     }
 }

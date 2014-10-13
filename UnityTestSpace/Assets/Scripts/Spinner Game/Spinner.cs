@@ -132,7 +132,7 @@ public class Spinner : MonoBehaviour
 
 
         // disable track collider
-        tracks_collider.enabled = false;
+       // tracks_collider.enabled = false;
 
         // update spinner position (first time) 
         UpdateAttachedPosition(contact.point, contact.normal);
