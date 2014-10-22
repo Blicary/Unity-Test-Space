@@ -38,7 +38,7 @@ public class RollerBladeMovement3 : MonoBehaviour
         input_fwrd = Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.UpArrow);
         input_back = Input.GetButton("Back");
         input_back_up = Input.GetButtonUp("Back");
-
+        
         // rotation
         rotation -= input_steer * rotate_speed * Time.deltaTime;
         graphics.localEulerAngles = new Vector3(0, 0, (rotation * Mathf.Rad2Deg) - 90);
